@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>我的派单</title>
+    <link rel="stylesheet" href="./weui.css"/>
+    <link rel="stylesheet" href="./fire.css"/>
+    <script src="../vendor/angularjs/angular.min.js"></script>
+</head>
+<body ontouchstart="">
+<div class="page" ng-app="myDeliveriesApp" ng-controller="myDeliveriesController">
+    <div class="page__hd">
+        <h2 class="page__title">我的派单</h2>
+        <p class="page__desc">以下是已完成派单，等待管理员确认中...</p>
+		<br>
+    </div>
+    <div class="page__bd" ng-repeat="x in deliveries">
+        <div class="weui-form-preview">
+            <div class="weui-form-preview__hd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">派单号</label>
+                    <em class="weui-form-preview__value">{{x.deliveryId}}</em>
+                </div>
+            </div>
+            <div class="weui-form-preview__bd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">提单号</label>
+                    <span class="weui-form-preview__value">{{x.blNo}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">靠泊码头</label>
+                    <span class="weui-form-preview__value">{{x.wharf}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">货柜数</label>
+                    <span class="weui-form-preview__value">{{x.quantity}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">取柜时间</label>
+                    <span class="weui-form-preview__value">{{x.retrieveTime}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">期望到达时间</label>
+                    <span class="weui-form-preview__value">{{x.expectedArrivalTime}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">收货单位</label>
+                    <span class="weui-form-preview__value">{{x.recipient}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">收货单位地址</label>
+                    <span class="weui-form-preview__value">{{x.recipientAddress}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">注意事项</label>
+                    <span class="weui-form-preview__value">{{x.note}}</span>
+                </div>
+            </div>
+            <div class="weui-form-preview__ft">
+            </div>
+        </div>
+        <br>
+    </div>
+    <div class="page__ft">
+		<div class="weui-footer">
+			<p class="weui-footer__text">版权所有 &copy; 2015-2018 帝丰物流有限公司</p>
+			<br>
+		</div>
+    </div>
+
+</div>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+
+    <script>
+	var app = angular.module('myDeliveriesApp', []);
+	app.controller('myDeliveriesController', function($scope, $http) {
+		$scope.deliveries = [];
+		$scope._loadDeliveries = function(driverId) {
+			$http.get("../rest/wechat/drivers/" + driverId + "/deliveries")
+			.then(function (response){
+				var allDeliveries = response.data;
+				var i, delivery;
+				for (i = 0; i < allDeliveries.length; ++i) {
+					delivery = allDeliveries[i];
+					if (delivery.status > 4) {
+						$scope.deliveries.push(delivery);
+					}
+				}
+				
+			});
+		};
+		$http.get("../rest/wechat/drivers/me")
+		.then(function (response){
+				$scope.driver = response.data;
+				$scope._loadDeliveries($scope.driver.driverId);
+		});
+	});
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>帝丰物流信息管理系统</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="../vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="../vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="../vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <script src="../vendor/angularjs/angular.min.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+  <body ng-app="customersApp" ng-controller="customersController">
+
+    <div id="wrapper">
+		<div ng-include="'menu.html'"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">客户管理</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+			
+			
+			
+                            <!-- Modal -->
+                            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                            <h4 class="modal-title" id="myModalLabel">新建客户</h4>
+                                        </div>
+                                        <div class="modal-body">
+			
+			
+                            <div class="row">
+                                <form role="form">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label>客户名称</label>
+                                            <input class="form-control" placeholder="输入客户名称" ng-model="customer.name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>手机号</label>
+                                            <input class="form-control" placeholder="输入手机号" ng-model="customer.mobile">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label>电话</label>
+                                            <input class="form-control" placeholder="输入客户电话" ng-model="customer.telephone">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>微信号</label>
+                                            <input class="form-control" placeholder="输入微信号" ng-model="customer.wechatName">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+							
+                                        </div>
+                                        <div class="modal-footer">
+											<button class="btn btn-primary" ng-click="createCustomer()" data-dismiss="modal">创建</button>
+											<button class="btn btn-default" data-dismiss="modal">关闭</button>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
+                            </div>
+                            <!-- /.modal -->
+			
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-user fa-fw"></i> 所有客户列表
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-chevron-down"></i>
+                                </button>
+                                <ul class="dropdown-menu slidedown">
+                                    <li>
+                                        <a href="#" ng-click="newCustomer()">
+                                            <i class="fa fa-user fa-fw"></i> 新建客户
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+                                <thead>
+                                    <tr>
+                                        <th>客户名称</th>
+                                        <th>手机号</th>
+                                        <th>客户电话</th>
+                                        <th>微信号</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="gradeX" ng-repeat="x in customers">
+                                        <td>{{x.name}}</td>
+                                        <td>{{x.mobile}}</td>
+                                        <td>{{x.telephone}}</td>
+                                        <td>{{x.wechatName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="../vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="../vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="../vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
+    <script src="../vendor/datatables-responsive/dataTables.responsive.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="../dist/js/sb-admin-2.js"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+	var app = angular.module('customersApp', []);
+	app.controller('customersController', function($scope, $http) {
+		$('#myModal').on('hidden.bs.modal', function (e) {
+			$scope._reset();
+		});
+
+		$http.get("../rest/mgmt/customers")
+			.then(function (response){
+				$scope.customers = response.data;
+			});
+
+		$scope.createCustomer = function() {
+			$http.post("../rest/mgmt/customers", $scope.customer)
+			.then(function (response){
+				$scope.customers.push(response.data);
+			});
+		};
+		$scope.deleteCustomer = function(x) {
+			// TODO: Post data to server
+			var i, len, customer;
+			len = $scope.customers.length;
+			for (i = 0; i < len; ++i) {
+				customer = $scope.customers[i];
+				if (customer.customerId == x) {
+					$scope.customers.splice(i, 1);
+					break;
+				}
+			}
+		};
+		$scope.newCustomer = function() {
+			$('#myModal').modal('toggle');
+		};
+		$scope._reset = function() {
+			$scope.customer = {
+				customerId: 0,
+				name: "",
+				mobile: "",
+				telephone: "",
+				wechatName: ""
+			};
+		};
+		$scope._reset();
+	});
+	function openSearchPage() {
+		var keyword = $('#searchKeyword').val();
+		window.location.href = "search.html?keyword=" + keyword;
+	}
+    </script>
+  </body>
+</html>

@@ -1,0 +1,301 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <!-- 
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0"> -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="initial-scale=1.0, target-densitydpi=device-dpi" /><!-- this is for mobile (Android) Chrome -->
+<meta name="viewport" content="initial-scale=1.0, width=device-height"><!--  mobile Safari, FireFox, Opera Mobile  -->
+    <title>我的派单</title>
+    <link rel="stylesheet" href="./weui.css"/>
+    <link rel="stylesheet" href="./fire.css"/>
+    <script src="../vendor/angularjs/angular.min.js"></script>
+    <style type="text/css">
+
+.sign-dialog {
+  position: fixed;
+  z-index: 5000;
+  width: 100%;
+  height: 100%;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  background-color: #FFFFFF;
+  text-align: center;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.sign-dialog__bd {
+  height: 80%;
+  border: 2px dotted black;
+  color:darkblue;
+  background-color:lightgrey;
+}
+
+</style>
+</head>
+<body ontouchstart="">
+<div class="page" ng-app="myDeliveriesApp" ng-controller="myDeliveriesController">
+    <div class="page__hd">
+        <h2 class="page__title">我的派单</h2>
+        <p class="page__desc"></p>
+		<br>
+    </div>
+    <div class="page__bd" ng-repeat="x in deliveries">
+        <div class="weui-form-preview">
+            <div class="weui-form-preview__hd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">派单号</label>
+                    <em class="weui-form-preview__value">{{x.deliveryId}}</em>
+                </div>
+            </div>
+            <div class="weui-form-preview__bd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">提单号</label>
+                    <span class="weui-form-preview__value">{{x.blNo}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">靠泊码头</label>
+                    <span class="weui-form-preview__value">{{x.wharf}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">货柜数</label>
+                    <span class="weui-form-preview__value">{{x.quantity}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">取柜时间</label>
+                    <span class="weui-form-preview__value">{{x.retrieveTime}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">期望到达时间</label>
+                    <span class="weui-form-preview__value">{{x.expectedArrivalTime}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">收货单位</label>
+                    <span class="weui-form-preview__value">{{x.recipient}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">收货单位地址</label>
+                    <span class="weui-form-preview__value">{{x.recipientAddress}}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">注意事项</label>
+                    <span class="weui-form-preview__value">{{x.note}}</span>
+                </div>
+            </div>
+            <div class="weui-form-preview__ft">
+                <a class="weui-form-preview__btn weui-form-preview__btn_default" href="javascript:" ng-show="x.status == 3" ng-click="showDialog(x.deliveryId, true)">取消接单</a>
+                <a class="weui-form-preview__btn weui-form-preview__btn_primary" href="javascript:" ng-click="showDialog(x.deliveryId, false)">{{x.status | toAction}}</a>
+            </div>
+        </div>
+        <br>
+    </div>
+    <div class="page__ft">
+		<div class="weui-footer">
+			<p class="weui-footer__text">版权所有 &copy; 2015-2018 帝丰物流有限公司</p>
+			<br>
+		</div>
+    </div>
+	
+	<div id="dialogs">
+        <!--BEGIN confirmDialog-->
+        <div class="js_dialog" id="confirmDialog" style="display: none;">
+            <div class="weui-mask"></div>
+            <div class="weui-dialog">
+                <div class="weui-dialog__hd"><strong class="weui-dialog__title">操作确认</strong></div>
+                <div class="weui-dialog__bd">{{dialogContent}}</div>
+                <div class="weui-dialog__ft">
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default">取消</a>
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" ng-click="doAction(currentDeliveryId)">确认</a>
+                </div>
+            </div>
+        </div>
+        <!--END confirmDialog-->
+        <!--BEGIN signatureDialog-->
+        <div class="js_dialog" id="signatureDialog" style="display: none;">
+            <div class="weui-mask"></div>
+            <div class="sign-dialog">
+                <div class="weui-dialog__hd"><strong class="weui-dialog__title">请客户在下面签名并确认</strong></div>
+                <div class="sign-dialog__bd" id="signature"></div>
+                <div class="weui-dialog__ft">
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" ng-click="resetSignature()">取消</a>
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" ng-click="doAction(currentDeliveryId)">确认</a>
+                </div>
+            </div>
+        </div>
+        <!--END signatureDialog-->
+	</div>
+	<!--BEGIN toast-->
+    <div id="toast" style="display: none;">
+        <div class="weui-mask_transparent"></div>
+        <div class="weui-toast">
+            <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+            <p class="weui-toast__content">{{toastContent}}</p>
+        </div>
+    </div>
+    <!--end toast-->
+</div>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+	<script src="../vendor/jsignature/jSignature.js"></script>
+	<script src="../vendor/jsignature/plugins/jSignature.CompressorBase30.js"></script>
+	<script src="../vendor/jsignature/plugins/jSignature.CompressorSVG.js"></script>
+
+    <script>
+	var app = angular.module('myDeliveriesApp', []);
+	app.controller('myDeliveriesController', function($scope, $http) {
+		$scope.signatureInitialized = false;
+		$scope.deliveries = [];
+		$scope.undoDelivery = false;
+		$scope.currentDeliveryId = 0;
+		$scope._loadDeliveries = function(driverId) {
+			$http.get("../rest/wechat/drivers/" + driverId + "/deliveries")
+			.then(function (response){
+				var allDeliveries = response.data;
+				var i, delivery;
+				for (i = 0; i < allDeliveries.length; ++i) {
+					delivery = allDeliveries[i];
+					if (delivery.status < 5) {
+						$scope.deliveries.push(delivery);
+					}
+				}
+				
+			});
+		};
+		$http.get("../rest/wechat/drivers/me")
+		.then(function (response){
+				$scope.driver = response.data;
+				$scope._loadDeliveries($scope.driver.driverId);
+		});
+		$scope.showDialog = function(deliveryId, undoDelivery) {
+			var i, len, x;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == deliveryId) {
+					switch(x.status) {
+					case 2:
+						if (undoDelivery) {
+							$scope.dialogContent = '您确认取消接单吗？';
+						} else {
+							$scope.dialogContent = '您确认接单吗？';
+						}
+						$scope.undoDelivery = undoDelivery;
+						$scope.currentDeliveryId = deliveryId;
+						$('#confirmDialog').fadeIn(200);
+						return;
+					case 3:
+						if (undoDelivery) {
+							$scope.dialogContent = '您确认取消接单吗？';
+						} else {
+							$scope.dialogContent = '您确认已经送达指定地点吗？';
+						}
+						$scope.undoDelivery = undoDelivery;
+						$scope.currentDeliveryId = deliveryId;
+						$('#confirmDialog').fadeIn(200);
+						return;
+					case 4:
+						$scope.currentDeliveryId = deliveryId;
+						$('#signatureDialog').fadeIn(200, function () {
+							if (!$scope.signatureInitialized) {
+						        $("#signature").jSignature();
+						        $scope.signatureInitialized = true;
+							}
+					    });
+						return;
+					default:
+						return;
+					}
+					return;
+				}
+			}
+		};
+		$scope.doAction = function(deliveryId) {
+			var i, len, x;
+			var $toast;
+			var $signature;
+			var $newStatus;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == deliveryId) {
+					if (x.status == 4) {
+						$signature = $scope._getSignature();
+						$http.post("../rest/wechat/drivers/" + x.driverId + "/deliveries/" + x.deliveryId + "/signature", {data: $signature[1]})
+						.then(function (response){
+							$scope.resetSignature();
+						});
+					}
+					$newStatus = $scope.undoDelivery ? 1 : x.status + 1;
+					$http.put("../rest/wechat/drivers/" + x.driverId + "/deliveries/" + x.deliveryId + "/status", {status: $newStatus})
+					.then(function (response){
+						x.status = $newStatus;
+						switch(x.status) {
+						case 1:
+							$scope.toastContent = '已取消接单';
+							$scope.deliveries.splice(i, 1);
+							break;
+						case 3:
+							$scope.toastContent = '已确认接单';
+							break;
+						case 4:
+							$scope.toastContent = '已确认送达';
+							break;
+						case 5:
+							$scope.toastContent = '已确认签收';
+							$scope.deliveries.splice(i, 1);
+							break;
+						default:
+							$scope.toastContent = '???';
+							break;
+						}
+						$toast = $('#toast');
+						if ($toast.css('display') != 'none') return;
+						$toast.fadeIn(100);
+						setTimeout(function () {
+							$toast.fadeOut(100);
+						}, 2000);
+					});
+					return;
+				}
+			}
+		};
+		$scope._getSignature = function() {
+			var $sigdiv = $("#signature");
+			var data = $sigdiv.jSignature('getData', 'image/svg+xml;base64');
+        	return data;
+		};
+		$scope.resetSignature = function() {
+			var $sigdiv = $("#signature");
+        	$sigdiv.jSignature("reset");
+		};
+	});
+	app.filter('toAction', function() {
+		return function(x) {
+			var action;
+			switch(x) {
+			case 2:
+				action = '确认接单';
+				break;
+			case 3:
+				action = '确认送达';
+				break;
+			case 4:
+				action = '签名并确认';
+				break;
+			default:
+				action = '???';
+				break;
+			}
+			return action;
+		};
+	});
+	$('#dialogs').on('click', '.weui-dialog__btn', function(){
+        $(this).parents('.js_dialog').fadeOut(200);
+    });
+    </script>
+</body>
+</html>

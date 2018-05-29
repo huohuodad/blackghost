@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>帝丰物流信息管理系统</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="../vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="../vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="../vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <link href="../vendor/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css" media="screen">
+
+    <script src="../vendor/angularjs/angular.min.js"></script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+  <body ng-app="deliveriesApp" ng-controller="deliveriesController">
+
+    <div id="wrapper">
+		<div ng-include="'menu.html'"></div>
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header">派单管理</h1>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+			
+            <!-- Create/Update Delivery Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            	<div class="modal-dialog">
+                	<div class="modal-content">
+                    	<div class="modal-header">
+                        	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="myModalLabel" ng-show="buttons.showCreate"><i class="fa fa-tasks fa-fw"></i> 新建派单</h4>
+                            <h4 class="modal-title" id="myModalLabel" ng-show="!buttons.showCreate"><i class="fa fa-tasks fa-fw"></i> 派单号 {{delivery.deliveryId}} - {{delivery.status | toLabel:statuses}}</h4>
+                        </div>
+
+                    	<div class="modal-body">
+                    		<div class="row">
+         	    	       		<form role="form">
+								<input type="hidden" ng-model="delivery.deliveryId">
+                    	    	<div class="col-lg-6">
+                        			<div class="form-group">
+                            			<label>司机</label>
+                                		<select class="form-control" ng-model="delivery.driverId" ng-disabled="deliveryUnchangeable">
+                                			<option ng-repeat="x in drivers" ng-value="{{x.driverId}}">{{x.name}} - {{x.plateNumber}}</option>
+ 	                               		</select>
+    	                        	</div>
+        	                    	<div class="form-group">
+            	                		<label>靠泊码头</label>
+                	                	<select class="form-control" ng-model="delivery.wharf" ng-disabled="deliveryUnchangeable">
+											<option ng-repeat="x in wharfs">{{x}}</option>
+                        	        	</select>
+                            		</div>
+   	                         		<div class="form-group input-append date form_datetime">
+    	                        		<label>取柜时间</label>
+        	                        	<input id="retrieveTime" class="form-control" placeholder="选择取柜时间" ng-model="delivery.retrieveTime" ng-disabled="deliveryUnchangeable" data-date="2013-02-21T15:25:00Z">
+										<span class="add-on"><i class="icon-remove"></i></span>
+										<span class="add-on"><i class="icon-calendar"></i></span>
+                            		</div>
+									<div class="form-group input-append date form_datetime">
+    	                        		<label>期望到达时间</label>
+										<input id="expectedArrivalTime" class="form-control" placeholder="选择期望到达时间" ng-model="delivery.expectedArrivalTime" ng-disabled="deliveryUnchangeable" data-date="2013-02-21T15:25:00Z">
+										<span class="add-on"><i class="icon-remove"></i></span>
+										<span class="add-on"><i class="icon-calendar"></i></span>
+                            		</div>
+                        		</div>
+                        		<div class="col-lg-6">
+                        			<div class="form-group">
+                            			<label>提单号</label>
+                            			<input class="form-control" placeholder="输入提单号" ng-model="delivery.blNo" ng-disabled="deliveryUnchangeable">
+                            		</div>
+                            		<div class="form-group">
+                            			<label>货柜数</label>
+                            			<select class="form-control" ng-model="delivery.quantity" ng-disabled="deliveryUnchangeable">
+											<option ng-repeat="x in quantities" ng-value="{{x}}">{{x}}</option>
+                                		</select>
+                            		</div>
+                            		<div class="form-group">
+                            			<label>收货单位</label>
+                            			<input class="form-control" placeholder="输入收货单位" ng-model="delivery.recipient" ng-disabled="deliveryUnchangeable">
+                            		</div>
+                            		<div class="form-group">
+                            			<label>收货单位地址</label>
+                                		<input class="form-control" placeholder="输入收货单位" ng-model="delivery.recipientAddress" ng-disabled="deliveryUnchangeable">
+                            		</div>
+                        		</div>
+                        		<div class="col-lg-12">
+                        			<div class="form-group">
+                             			<label>注意事项</label>
+                            			<textarea class="form-control" rows="3" ng-model="delivery.note" ng-disabled="deliveryUnchangeable"></textarea>
+                            		</div>
+                        		</div>
+                        		</form>
+                    		</div>
+						</div>
+                		<div class="modal-footer">
+							<button class="btn btn-primary" ng-click="createDelivery()" ng-show="buttons.showCreate" data-dismiss="modal">创建</button>
+							<button class="btn btn-primary" ng-click="updateDelivery()" ng-show="buttons.showUpdate" data-dismiss="modal">保存</button>
+							<button class="btn btn-primary" ng-click="submitDelivery()" ng-show="buttons.showSubmit" data-dismiss="modal">派单</button>
+							<button class="btn btn-primary" ng-click="closeDelivery()" ng-show="buttons.showComplete" data-dismiss="modal">完成派单</button>
+							<button class="btn btn-default" data-dismiss="modal">关闭</button>
+                		</div>
+            		</div>
+            		<!-- /.modal-content -->
+        		</div>
+        		<!-- /.modal-dialog -->
+        	</div>
+        	<!-- /.modal -->
+			
+            <!-- Show Signature Modal -->
+            <div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+            	<div class="modal-dialog">
+                	<div class="modal-content">
+                    	<div class="modal-header">
+                        	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="signModalLabel"><i class="fa fa-tasks fa-fw"></i> 客户签名</h4>
+                        </div>
+
+                    	<div class="modal-body">
+                    		<div class="row" id="signature"></div>
+						</div>
+                		<div class="modal-footer">
+							<button class="btn btn-default" data-dismiss="modal">关闭</button>
+                		</div>
+            		</div>
+            		<!-- /.modal-content -->
+        		</div>
+        		<!-- /.modal-dialog -->
+        	</div>
+        	<!-- /.modal -->
+
+            <!-- /.row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-tasks fa-fw"></i> 所有派单列表
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fa fa-chevron-down"></i>
+                                </button>
+                                <ul class="dropdown-menu slidedown">
+                                    <li>
+                                        <a href="#" ng-click="newDelivery()">
+                                            <i class="fa fa-tasks fa-fw"></i> 新建派单
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+                                <thead>
+                                    <tr>
+                                        <th>配送号</th>
+                                        <th>司机</th>
+                                        <th>提单号</th>
+                                        <th>靠泊码头</th>
+                                        <th>货柜数</th>
+                                        <th>取柜时间</th>
+                                        <th>期望到达时间</th>
+                                        <th>收货单位</th>
+                                        <th>客户签名</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="gradeX" style="cursor: pointer;" ng-repeat="x in deliveries" ng-click="showDelivery(x.deliveryId)">
+                                        <td>{{x.deliveryId}}</td>
+                                        <td>{{x.driverId | toDriverName:drivers}}</td>
+                                        <td>{{x.blNo}}</td>
+                                        <td>{{x.wharf}}</td>
+                                        <td>{{x.quantity}}</td>
+                                        <td>{{x.retrieveTime}}</td>
+                                        <td>{{x.expectedArrivalTime}}</td>
+                                        <td>{{x.recipient}}</td>
+                                        <td class="center"><button type="button" class="btn btn-outline btn-primary btn-xs" ng-click="showSignature($event, x.deliveryId)" ng-show="x.status > 4">查看签名</button></td>
+                                        <td>{{x.status | toLabel:statuses}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+
+	<script src="../vendor/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+	<script src="../vendor/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="../vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="../vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="../vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
+    <script src="../vendor/datatables-responsive/dataTables.responsive.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="../dist/js/sb-admin-2.js"></script>
+
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+	$(".form_datetime").datetimepicker({
+        language:  'zh-CN',
+        format: "yyyy/mm/dd - hh:ii",
+        autoclose: true,
+        todayBtn: false,
+        startDate: "2013-02-14 10:00",
+        minuteStep: 10
+    });
+
+	var app = angular.module('deliveriesApp', []);
+	app.controller('deliveriesController', function($scope, $http) {
+
+		$('#myModal').on('hidden.bs.modal', function (e) {
+			$scope.reset();
+		});
+
+
+		$http.get("../rest/mgmt/drivers")
+			.then(function (response){
+				$scope.drivers = response.data;
+			});
+		$scope.wharfs = [
+			"码头1",
+			"码头2",
+			"码头3",
+			"码头4"
+		];
+		$scope.quantities = [
+			"1",
+			"2",
+			"3",
+			"4"
+		];
+		$scope.statuses = [
+			{value: 1, label: "未派单"},
+			{value: 2, label: "已派单"},
+			{value: 3, label: "已接单"},
+			{value: 4, label: "已送达"},
+			{value: 5, label: "已签收"},
+			{value: 6, label: "已关闭"}
+		];
+
+		$http.get("../rest/mgmt/deliveries")
+			.then(function (response){
+				$scope.deliveries = response.data;
+			});
+
+		$scope.createDelivery = function() {
+			$scope.delivery.retrieveTime = $('#retrieveTime').val();
+			$scope.delivery.expectedArrivalTime = $('#expectedArrivalTime').val();
+			$http.post("../rest/mgmt/deliveries", $scope.delivery)
+			.then(function (response){
+				$scope.deliveries.push(response.data);
+			});
+		};
+		$scope.updateDelivery = function() {
+			var i, len, x;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == $scope.delivery.deliveryId) {
+					$scope.delivery.retrieveTime = $('#retrieveTime').val();
+					$scope.delivery.expectedArrivalTime = $('#expectedArrivalTime').val();
+					$http.put("../rest/mgmt/deliveries/" + $scope.delivery.driverId, $scope.delivery)
+					.then(function (response){
+
+					});
+					
+					x.driverId = $scope.delivery.driverId;
+					x.blNo = $scope.delivery.blNo;
+					x.wharf = $scope.delivery.wharf;
+					x.quantity = $scope.delivery.quantity;
+					x.retrieveTime = $scope.delivery.retrieveTime;
+					x.expectedArrivalTime = $scope.delivery.expectedArrivalTime;
+					x.arrivalTime = $scope.delivery.arrivalTime;
+					x.recipient = $scope.delivery.recipient;
+					x.recipientAddress = $scope.delivery.recipientAddress;
+					x.note = $scope.delivery.note;
+					break;
+				}
+			}
+		};
+		$scope.submitDelivery = function() {
+			var i, len, x;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == $scope.delivery.deliveryId) {
+					$scope.delivery.retrieveTime = $('#retrieveTime').val();
+					$scope.delivery.expectedArrivalTime = $('#expectedArrivalTime').val();
+					$scope.delivery.status = 2;
+					$http.put("../rest/mgmt/deliveries/" + $scope.delivery.driverId, $scope.delivery)
+					.then(function (response){
+
+					});
+					
+					x.driverId = $scope.delivery.driverId;
+					x.blNo = $scope.delivery.blNo;
+					x.wharf = $scope.delivery.wharf;
+					x.quantity = $scope.delivery.quantity;
+					x.retrieveTime = $scope.delivery.retrieveTime;
+					x.expectedArrivalTime = $scope.delivery.expectedArrivalTime;
+					x.arrivalTime = $scope.delivery.arrivalTime;
+					x.recipient = $scope.delivery.recipient;
+					x.recipientAddress = $scope.delivery.recipientAddress;
+					x.status = 2;
+					x.note = $scope.delivery.note;
+					break;
+				}
+			}
+		};
+		$scope.closeDelivery = function() {
+			var i, len, x;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == $scope.delivery.deliveryId) {
+					$scope.delivery.status = 6;
+					$http.put("../rest/mgmt/deliveries/" + $scope.delivery.driverId, $scope.delivery)
+					.then(function (response){
+
+					});
+					$scope.deliveries.splice(i, 1);
+					break;
+				}
+			}
+		};
+		$scope.newDelivery = function() {
+			$('#myModal').modal('toggle');
+		};
+		$scope.showDelivery = function(deliveryId) {
+			var i, len, x;
+			len = $scope.deliveries.length;
+			for (i = 0; i < len; ++i) {
+				x = $scope.deliveries[i];
+				if (x.deliveryId == deliveryId) {
+					$scope.delivery.deliveryId = x.deliveryId;
+					$scope.delivery.driverId = x.driverId;
+					$scope.delivery.blNo = x.blNo;
+					$scope.delivery.wharf = x.wharf;
+					$scope.delivery.quantity = x.quantity;
+					$scope.delivery.retrieveTime = x.retrieveTime;
+					$scope.delivery.expectedArrivalTime = x.expectedArrivalTime;
+					$scope.delivery.arrivalTime = x.arrivalTime;
+					$scope.delivery.recipient = x.recipient;
+					$scope.delivery.recipientAddress = x.recipientAddress;
+					$scope.delivery.status = x.status;
+					$scope.delivery.note = x.note;
+					if (x.status == 1) {
+						$scope.buttons = {
+							showCreate: false,
+							showUpdate: true,
+							showSubmit: true,
+							showComplete:  false
+						};
+						$scope.deliveryUnchangeable = false;
+					} else if (x.status == 5) {
+						$scope.buttons = {
+							showCreate: false,
+							showUpdate: false,
+							showSubmit: false,
+							showComplete:  true
+						};
+						$scope.deliveryUnchangeable = true;
+					} else {
+						$scope.buttons = {
+							showCreate: false,
+							showUpdate: false,
+							showSubmit: false,
+							showComplete:  false
+						};
+						$scope.deliveryUnchangeable = true;
+					}
+					$('#myModal').modal('toggle');
+					return;
+				}
+			}
+		};
+		$scope.reset = function() {
+			$scope.delivery = {
+				deliveryId: 0,
+				driverId: 0,
+				blNo: "",
+				wharf: "",
+				quantity: 2,
+				retrieveTime: "",
+				expectedArrivalTime: "",
+				arrivalTime: "",
+				recipient: "",
+				recipientAddress: "",
+				status: 1,
+				note: ""
+			};
+			$scope.buttons = {
+				showCreate: true,
+				showUpdate: false,
+				showSubmit: false,
+				showComplete:  false
+			};
+			$scope.deliveryUnchangeable = false;
+		};
+		$scope.showSignature = function($event, deliveryId) {
+			var i = new Image();
+			var $signArea = $('#signature');
+			$event.stopPropagation();
+			$('#signModal').modal('toggle');
+			$http.get("../rest/mgmt/deliveries/" + deliveryId + "/signature")
+				.then(function (response) {
+					i.src = 'data:image/svg+xml;base64,' + response.data.data;
+					$(i).appendTo($signArea)
+			});
+			
+		};
+		$('#signModal').on('hidden.bs.modal', function (e) {
+			var $signArea = $('#signature');
+			$signArea.html('');
+		});
+		$scope.reset();
+	});
+	app.filter('toDriverName', function() {
+		return function(x, drivers) {
+			var i, len, driver;
+			len = drivers.length;
+			for (i = 0; i < len; ++i) {
+				driver = drivers[i];
+				if (driver.driverId == x) {
+					return driver.name + " - " + driver.plateNumber;
+				}
+			}
+			return "???";
+		};
+	});
+	app.filter('toLabel', function() {
+		return function(x, entries) {
+			var i, len, e;
+			len = entries.length;
+			for (i = 0; i < len; ++i) {
+				e = entries[i];
+				if (e.value == x) {
+					return e.label;
+				}
+			}
+			return "???";
+		};
+	});
+	function openSearchPage() {
+		var keyword = $('#searchKeyword').val();
+		window.location.href = "search.html?keyword=" + keyword;
+	}
+    </script>
+  </body>
+</html>
